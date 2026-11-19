@@ -10,17 +10,34 @@ jobs:
   linux:
     name: Linux (build + test client under Wine)
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # The first run, with no cached packages, can spend 20 minutes on a slow Ubuntu mirror.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
       - uses: mlugg/setup-zig@v2
         with:
           version: 0.17.1
+      # Wine's packages (~150 MB with the 32-bit side) come from Ubuntu's mirror, which is
+      # sometimes very slow (5 min on one run, over 20 on the next). Keep them in the Actions
+      # cache; apt then downloads only what changed.
+      - name: Cache Ubuntu's packages
+        uses: actions/cache@v4
+        with:
+          path: ~/apt-debs
+          key: apt-debs-ubuntu-24.04-${{ hashFiles('.github/workflows/ci.yml') }}
+          restore-keys: apt-debs-ubuntu-24.04-
       - name: Install libusb and Wine
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
+          if compgen -G "$HOME/apt-debs/*.deb" > /dev/null; then
+            sudo cp "$HOME"/apt-debs/*.deb /var/cache/apt/archives/
+          fi
           sudo apt-get install -y --no-install-recommends libusb-1.0-0-dev wine wine64 wine32:i386
+          sudo apt-get autoclean
+          rm -rf "$HOME/apt-debs" && mkdir -p "$HOME/apt-debs"
+          cp /var/cache/apt/archives/*.deb "$HOME/apt-debs/" 2>/dev/null || true
+          echo "$(ls "$HOME/apt-debs" | wc -l) packages kept for the cache"
           wine --version
       - name: Build the DLL and the helper
         run: ./build.sh
