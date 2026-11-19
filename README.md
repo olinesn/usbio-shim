@@ -6,10 +6,11 @@ Avisoft's kernel driver `usgh_x64.sys`, a renamed build of Thesycon's USBIO
 generic USB driver. Wine cannot load kernel drivers, so usbio-shim stands in
 for it with libusb. Avisoft's files are not modified.
 
-**Status (2026-11-19):** tested under Wine 11 on macOS with simulated units.
-RECORDER finds two units, configures them, sets the rate and streams from both.
-With simulated units it reports dropouts and writes no WAV, because the bytes
-are not real 1216H audio. **Not yet tested with real units.**
+**Status (2026-11-19):** tested with simulated units only. Under Wine 11 on
+macOS, RECORDER finds two units, configures them, sets the rate and streams from
+both; it reports dropouts and writes no WAV, because the bytes are not real
+1216H audio. On Linux, CI streams from two simulated units through the shim
+under Ubuntu's Wine 9. **Not yet tested with real units.**
 
 ## How it works
 
