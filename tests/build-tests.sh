@@ -16,6 +16,6 @@ else
   echo "libusb-1.0 header not found (set LIBUSB_INCLUDE or LIBUSB_PREFIX)" >&2; exit 1
 fi
 ${CC:-cc} -O2 -g -Wall -Wextra -Wno-unused-parameter -std=gnu11 $USB_CFLAGS \
-  -o out/usbio-helper-mock helper.c usbio.c tests/libusb_mock.c -lpthread
+  -o out/usbio-helper-mock helper.c usbio.c tests/libusb_mock.c -lpthread -lm
 zig cc -target x86-windows-gnu -O2 -Wall -o out/usbio_client.exe tests/usbio_client.c -lsetupapi -lpowrprof
 echo "built out/usbio-helper-mock out/usbio_client.exe"
