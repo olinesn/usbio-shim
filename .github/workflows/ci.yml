@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  linux:
+    name: Linux (build + test client under Wine)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.17.1
+      - name: Install libusb and Wine
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libusb-1.0-0-dev wine wine64 wine32:i386
+          wine --version
+      - name: Build the DLL and the helper
+        run: ./build.sh
+      - name: Build the simulated units and the test client
+        run: tests/build-tests.sh
+      - name: Stream from two simulated units through the shim
+        env:
+          WINEDEBUG: -all
+        run: |
+          export WINEPREFIX="$RUNNER_TEMP/prefix"
+          timeout 300 wineboot -i
+          MOCK_DEVICES=2 out/usbio-helper-mock -p 47399 >"$RUNNER_TEMP/helper.log" 2>&1 &
+          sleep 1
+          cd out
+          WINEDLLOVERRIDES="powrprof=n,b;winemenubuilder.exe=d" USBIO_SHIM_PORT=47399 \
+            timeout 180 wine usbio_client.exe 5 2
+      - name: Helper log
+        if: always()
+        run: cat "$RUNNER_TEMP/helper.log" || true
+
+  macos:
+    name: macOS (build)
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.17.1
+      - name: Install libusb
+        run: brew install libusb
+      - name: Build the DLL and the helper
+        run: ./build.sh
+      - name: Build the simulated units and the test client
+        run: tests/build-tests.sh

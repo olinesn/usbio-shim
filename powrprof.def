@@ -1,0 +1,4 @@
+LIBRARY powrprof.dll
+EXPORTS
+SetSuspendState@12
+SetSuspendState=SetSuspendState@12
