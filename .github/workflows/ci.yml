@@ -48,7 +48,7 @@ jobs:
           WINEDEBUG: -all
         run: |
           export WINEPREFIX="$RUNNER_TEMP/prefix"
-          timeout 300 wineboot -i
+          timeout 300 wineboot -u
           MOCK_DEVICES=2 out/usbio-helper-mock -p 47399 >"$RUNNER_TEMP/helper.log" 2>&1 &
           sleep 1
           cd out

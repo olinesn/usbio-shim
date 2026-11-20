@@ -9,8 +9,10 @@ for it with libusb. Avisoft's files are not modified.
 **Status (2026-11-19):** tested with simulated units only. Under Wine 11 on
 macOS, RECORDER finds two units, configures them, sets the rate and streams from
 both; it reports dropouts and writes no WAV, because the bytes are not real
-1216H audio. On Linux, CI streams from two simulated units through the shim
-under Ubuntu's Wine 9. **Not yet tested with real units.**
+1216H audio. On Linux (Ubuntu 24.04, WineHQ 11), RECORDER started by
+usv-playpen found, configured and opened both simulated units the same way, and
+CI streams from two simulated units through the shim under Ubuntu's Wine 9.
+**Not yet tested with real units.**
 
 ## How it works
 
@@ -74,7 +76,7 @@ a self-extracting archive holding `RECORDER USGH.msi`:
 
 ```bash
 export WINEPREFIX=~/.wine-avisoft
-wineboot -u
+wineboot -u      # -u, not -i: under Wine 11, -i leaves a new prefix without kernel32.dll
 # A new prefix links Desktop, Documents, ... to your own folders. Replace the
 # links with plain folders so the installer's shortcuts stay inside the prefix.
 for d in Desktop Documents Downloads Music Pictures Videos Templates; do
